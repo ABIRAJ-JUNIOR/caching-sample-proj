@@ -26,9 +26,12 @@ namespace caching_sample_proj
             builder.Services.AddDistributedMemoryCache();
 
             // In a real app, you might use Redis or SQL Server cache:
-            builder.Services.AddStackExchangeRedisCache(options =>
+            // Add SQL Server distributed caching
+            builder.Services.AddDistributedSqlServerCache(options =>
             {
-                options.Configuration = builder.Configuration.GetConnectionString("Redis");
+                options.ConnectionString = builder.Configuration.GetConnectionString("SqlServerCache");
+                options.SchemaName = "dbo";
+                options.TableName = "CacheTable";
             });
 
             var app = builder.Build();

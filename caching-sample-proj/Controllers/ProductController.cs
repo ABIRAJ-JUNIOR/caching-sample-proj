@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using System.Text.Json;
 
 namespace caching_sample_proj.Controllers
 {
@@ -58,5 +59,39 @@ namespace caching_sample_proj.Controllers
 
             return Ok(products);
         }
+
+        // Distributed Cache Example
+        [HttpGet("distributed-cache")]
+        public async Task<IActionResult> GetAllProductsDistributedCache()
+        {
+            string cacheKey = "AllProducts_Distributed";
+            IEnumerable<Product> products;
+
+            var cachedProducts = await _distributedCache.GetStringAsync(cacheKey);
+
+            if (string.IsNullOrEmpty(cachedProducts))
+            {
+                // Cache miss - fetch from service
+                products = await _productService.GetAllProductsAsync();
+
+                // Serialize and store in distributed cache
+                string serializedProducts = JsonSerializer.Serialize(products);
+                var options = new DistributedCacheEntryOptions()
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(10))
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+
+                await _distributedCache.SetStringAsync(cacheKey, serializedProducts, options);
+                Console.WriteLine($"[{DateTime.Now}] Distributed cache miss: {cacheKey}");
+            }
+            else
+            {
+                // Cache hit - deserialize from cache
+                products = JsonSerializer.Deserialize<IEnumerable<Product>>(cachedProducts)!;
+                Console.WriteLine($"[{DateTime.Now}] Distributed cache hit: {cacheKey}");
+            }
+
+            return Ok(products);
+        }
+
     }
 }
