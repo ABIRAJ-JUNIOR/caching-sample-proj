@@ -93,5 +93,36 @@ namespace caching_sample_proj.Controllers
             return Ok(products);
         }
 
+
+        // Cache by ID example
+        [HttpGet("memory-cache/{id}")]
+        public async Task<IActionResult> GetProductByIdMemoryCache(int id)
+        {
+            string cacheKey = $"Product_{id}";
+
+            if (!_memoryCache.TryGetValue(cacheKey, out Product? product))
+            {
+                // Cache miss
+                product = await _productService.GetProductByIdAsync(id);
+
+                if (product == null)
+                    return NotFound();
+
+                var cacheOptions = new MemoryCacheEntryOptions()
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(30))
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(5));
+
+                _memoryCache.Set(cacheKey, product, cacheOptions);
+                Console.WriteLine($"[{DateTime.Now}] Cache miss: {cacheKey}");
+            }
+            else
+            {
+                Console.WriteLine($"[{DateTime.Now}] Cache hit: {cacheKey}");
+            }
+
+            return Ok(product);
+        }
+
+
     }
 }
