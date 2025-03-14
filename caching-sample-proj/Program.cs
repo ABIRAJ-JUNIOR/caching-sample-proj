@@ -1,4 +1,6 @@
 
+using caching_sample_proj.Service;
+
 namespace caching_sample_proj
 {
     public class Program
@@ -14,6 +16,8 @@ namespace caching_sample_proj
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            // Add services
+            builder.Services.AddTransient<IProductService, ProductService>();
 
             // Add Memory Cache
             builder.Services.AddMemoryCache();
