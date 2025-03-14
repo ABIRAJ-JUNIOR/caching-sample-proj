@@ -1,0 +1,6 @@
+@caching_sample_proj_HostAddress = http://localhost:5180
+
+GET {{caching_sample_proj_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
