@@ -148,5 +148,15 @@ namespace caching_sample_proj.Controllers
 
             return Ok(products);
         }
+
+        // Cache removal example
+        [HttpDelete("memory-cache/{id}")]
+        public IActionResult RemoveProductFromCache(int id)
+        {
+            string cacheKey = $"Product_{id}";
+            _memoryCache.Remove(cacheKey);
+            Console.WriteLine($"[{DateTime.Now}] Cache removed: {cacheKey}");
+            return Ok($"Product {id} removed from cache");
+        }
     }
 }
