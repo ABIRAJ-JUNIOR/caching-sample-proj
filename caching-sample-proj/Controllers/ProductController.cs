@@ -123,6 +123,30 @@ namespace caching_sample_proj.Controllers
             return Ok(product);
         }
 
+        // Cache by category example
+        [HttpGet("memory-cache/category/{category}")]
+        public async Task<IActionResult> GetProductsByCategoryMemoryCache(string category)
+        {
+            string cacheKey = $"Products_Category_{category}";
 
+            if (!_memoryCache.TryGetValue(cacheKey, out IEnumerable<Product>? products))
+            {
+                // Cache miss
+                products = await _productService.GetProductsByCategoryAsync(category);
+
+                var cacheOptions = new MemoryCacheEntryOptions()
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(15))
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(3));
+
+                _memoryCache.Set(cacheKey, products, cacheOptions);
+                Console.WriteLine($"[{DateTime.Now}] Cache miss: {cacheKey}");
+            }
+            else
+            {
+                Console.WriteLine($"[{DateTime.Now}] Cache hit: {cacheKey}");
+            }
+
+            return Ok(products);
+        }
     }
 }
