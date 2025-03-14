@@ -17,7 +17,7 @@ namespace caching_sample_proj
             builder.Services.AddSwaggerGen();
 
             // Add services
-            builder.Services.AddTransient<IProductService, ProductService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
 
             // Add Memory Cache
             builder.Services.AddMemoryCache();
